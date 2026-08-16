@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- turboquant fleet. Child repos are cloned into the workspace root;
+       this manifest repo lives in .repo/manifests and is not the workspace. -->
+
+  <remote name="v-sekai-fire" fetch="https://github.com/V-Sekai-fire" />
+  <remote name="sudoingx" fetch="https://github.com/sudoingX" />
+
+  <!-- No remote or revision here: every project states both, so a project that -->
+  <!-- omits either fails at init instead of inheriting a default nobody chose. -->
+  <default sync-j="16" />
+
+  <!-- Godot engine fork carrying modules/llm and thirdparty/llama_cpp.
+       ~1.6 GB packed: prefer a partial clone at init time (see README). -->
+  <project name="turboquant-godot" remote="v-sekai-fire" revision="feat/turboquant-on-master" />
+
+  <project name="turboquant-project" remote="v-sekai-fire" revision="main" />
+
+  <project name="qwen38-mtp" remote="sudoingx" revision="master" />
+</manifest>
