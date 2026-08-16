@@ -81,6 +81,31 @@ Documentation carries the same obligation. Where a README states a number, that 
 should be machine-checked against live code (see `dataflow-coco-gemx/check_readme_claims.py`)
 so drift fails a command rather than being discovered six months later.
 
+## Documentation is antifragile
+
+Robust documentation survives being wrong. Antifragile documentation gets **stronger** each
+time it is wrong, because every error is converted into a check before the fix ships.
+
+1. **One source of truth per fact, and it is not the prose.** A README states what the
+   manifest, the schema, or the code already says. Where prose and artefact disagree, the
+   artefact wins and the prose is the bug.
+2. **Every claim is executable or it is decoration.** Counts, tables, branch names, file
+   sizes, and version numbers are checked by a command that exits non-zero on drift. A claim
+   no command can falsify does not belong in the document.
+3. **A found error becomes a check, not just an edit.** Correcting the text is half the fix.
+   The other half is the assertion that would have caught it, added in the same change. This
+   is the whole mechanism: stress adds checks, so the harness ends up strongest exactly where
+   the documentation has failed before.
+4. **The checker ships with a negative control.** A doc gate that has never been shown to
+   fail is certifying nothing. Each check is run once against deliberately broken input, and
+   that run is part of the test, not a one-off done by hand.
+5. **Never hedge to survive.** "Roughly", "should be", and "approximately" applied to a
+   knowable number are ways of making a claim unfalsifiable so the check cannot fail. State
+   the number and let the gate defend it; where a value is genuinely a range, state the range
+   and check the bound.
+6. **Prefer generated to maintained.** A table a script can emit from the artefact should be
+   emitted, not typed. Hand-maintained duplication is where drift starts.
+
 ## Blocklists
 
 Sources excluded from corpora, with the reason:
