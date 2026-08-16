@@ -1,20 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
   <!-- turboquant fleet. Child repos are cloned into the workspace root;
-       this manifest repo lives in .repo/manifests and is not the workspace. -->
+       this manifest repo lives in .repo/manifests and is not the workspace.
+
+       The checkout layout follows RFD 0111, as spelled out in
+       fabric-ws/.repo/manifests/default.xml: six position words name six sides
+       of one hexagon, the numbers carry the ring order so a listing prints the
+       driving side first and the driven side last, and every side points at 3
+       and 4.
+
+         1-transport   the input that triggers an interactor
+         2-contract    what a transport layer and an interactor compose against
+         3-interactor  a process that performs actions on entities
+         4-entities    the simulated things, and the actions on them
+         5-repository  an interface that gets, creates, and changes entities
+         6-datasource  an implementation of a repository
+
+       vendor/ holds the git repositories of another organisation, placed where
+       the name cannot be changed. A repository RFD 0111 gives no type stays at
+       the root; a guess would state a type that is not theirs. Sides 3 and 5
+       hold no repository in this set yet. -->
 
   <remote name="v-sekai-fire" fetch="https://github.com/V-Sekai-fire" />
+  <remote name="v-sekai-multiplayer-fabric" fetch="https://github.com/v-sekai-multiplayer-fabric" />
+  <remote name="taskweft" fetch="https://github.com/taskweft" />
   <remote name="sudoingx" fetch="https://github.com/sudoingX" />
 
   <!-- No remote or revision here: every project states both, so a project that -->
   <!-- omits either fails at init instead of inheriting a default nobody chose. -->
   <default sync-j="16" />
 
-  <!-- Godot engine fork carrying modules/llm and thirdparty/llama_cpp.
+  <!-- 1: the transport layers.
+       The gateway edge terminates client transport and hands the result to a
+       plane over iceoryx2. It is where an iceoryx2-to-client bridge lands, so
+       no new component is needed for stock Godot or a browser to connect. -->
+  <project name="transport-gateway" path="1-transport/gateway" remote="v-sekai-multiplayer-fabric" revision="main" />
+
+  <!-- 2: the contract both sides compose against.
+       "A command in, reply bytes out, and nothing about how the command
+       arrived" — which is what lets one interactor serve iceoryx2, WebSocket
+       and H3/WebTransport without knowing which is speaking. -->
+  <project name="contract-command" path="2-contract/command" remote="v-sekai-multiplayer-fabric" revision="main" />
+
+  <!-- 4: the entities.
+       ReBAC is the relationship and capability guard behind RECTGTN's R and C. -->
+  <project name="entities-lean-rebac" path="4-entities/lean-rebac" remote="v-sekai-multiplayer-fabric" revision="main" />
+
+  <!-- 6: the data sources.
+       llama.cpp carrying TurboQuant KV cache and MTP. Inference lives in the
+       server binary, never in the engine, which is what keeps Godot stock. -->
+  <project name="datasource-llama-cpp" path="6-datasource/llama-cpp" remote="v-sekai-fire" revision="feature/turboquant-kv-cache" />
+
+  <!-- RFD 0111 gives these no type, so they stay at the root until an RFD
+       decides one. -->
+
+  <!-- The iceoryx2 C ABI as a dlsym dispatch table, plus the shared limits and
+       payload types. Every plane and edge links it and none of them links
+       iceoryx2 directly. Command/reply is proved on Windows against v0.9.3;
+       Linux is not yet proved, and the server target is Linux. -->
+  <project name="fabric-harness" remote="v-sekai-multiplayer-fabric" revision="main" />
+
+  <!-- The Godot engine fork. Retained for the TurboQuant llama.cpp subtree and
+       modules/llm; the Commons client is stock Godot and loads neither.
        ~1.6 GB packed: prefer a partial clone at init time (see README). -->
   <project name="turboquant-godot" remote="v-sekai-fire" revision="feat/turboquant-on-master" />
 
   <project name="turboquant-project" remote="v-sekai-fire" revision="main" />
 
   <project name="qwen38-mtp" remote="sudoingx" revision="master" />
+
+  <!-- Another organisation owns these names, so the checkout places them where
+       the name cannot be changed. -->
+
+  <!-- RECTGTN: the Relationship-Enabled Capability-Temporal Goal-Task-Network
+       planner, exposed through plan and replan. taskweft_nif is the native
+       core; keeping one planner implementation server-side avoids having two
+       bindings to hold in agreement. -->
+  <project name="taskweft" path="vendor/taskweft" remote="taskweft" revision="main" />
 </manifest>
